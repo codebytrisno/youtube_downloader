@@ -1,23 +1,6 @@
 import { extractYoutubeId, isYouTubeUrl } from "@/lib/youtube";
 import { NextRequest, NextResponse } from "next/server";
 
-type ApiResult = {
-  link?: string;
-  title?: string;
-  thumbnail?: string;
-  duration?: string;
-  quality?: string;
-  message?: string;
-  status?: string;
-  result?: {
-    link?: string;
-    title?: string;
-    thumbnail?: string;
-    duration?: string;
-    quality?: string;
-  };
-};
-
 type NormalizedResult = {
   url: string;
   title: string;
@@ -28,100 +11,32 @@ type NormalizedResult = {
   format: string;
 };
 
-const DEFAULT_HOST = "youtube-mp36.p.rapidapi.com";
+const DEFAULT_HOST = "youtube-to-mp4-mp3.p.rapidapi.com";
 
 function stringValue(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function formatDuration(seconds: number | string | undefined): string {
-  const secs = typeof seconds === "string" ? parseInt(seconds || "0", 10) : (typeof seconds === "number" ? seconds : 0);
-  if (!secs || isNaN(secs)) return "Unknown";
-  const mins = Math.floor(secs / 60);
-  const sec = secs % 60;
-  return `${mins}:${sec.toString().padStart(2, "0")}`;
+function pick(values: Record<string, unknown>, ...keys: string[]): string {
+  for (const key of keys) {
+    const v = stringValue(values[key]);
+    if (v) return v;
+  }
+  return "";
 }
 
-function getHost(): string {
-  return process.env.VIDEO_DOWNLOAD_API_HOST || process.env.RAPID_API_HOST || DEFAULT_HOST;
-}
+function formatDuration(value: string | number | undefined): string {
+  const str = String(value ?? "");
+  if (!str) return "Unknown";
 
-function getApiKey(): string | undefined {
-  return process.env.VIDEO_DOWNLOAD_API_KEY || process.env.RAPID_API_KEY;
-}
-
-async function sleep(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function fetchFromRapidApi(sourceUrl: string, format: string = "mp3"): Promise<ApiResult> {
-  const apiKey = getApiKey();
-
-  if (!apiKey) {
-    throw {
-      message: "API key belum dikonfigurasi. Atur VIDEO_DOWNLOAD_API_KEY di Vercel Environment Variables.",
-      status: 503
-    };
+  const num = parseInt(str, 10);
+  if (!isNaN(num) && num > 0) {
+    const mins = Math.floor(num / 60);
+    const sec = num % 60;
+    return `${mins}:${sec.toString().padStart(2, "0")}`;
   }
 
-  const host = getHost();
-  const videoId = extractYoutubeId(sourceUrl);
-  const params = new URLSearchParams({ id: videoId });
-  if (format === "mp4") {
-    params.set("format", "mp4");
-  }
-  const endpoint = `https://${host}/dl?${params.toString()}`;
-
-  const maxRetries = 20;
-  let attempts = 0;
-  let lastData: any = {};
-
-  while (attempts < maxRetries) {
-    const response = await fetch(endpoint, {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Key": apiKey,
-        "X-RapidAPI-Host": host,
-      },
-    });
-
-    let data: any;
-    try {
-      data = await response.json();
-    } catch {
-      throw {
-        message: "API mengembalikan respons yang tidak valid.",
-        status: response.status
-      };
-    }
-
-    lastData = data;
-
-    if (data.status === "processing") {
-      attempts++;
-      await sleep(1000);
-      continue;
-    }
-
-    if (!response.ok) {
-      throw {
-        message: stringValue(data.msg || data.message) || "API request failed",
-        status: response.status
-      };
-    }
-
-    return {
-      link: data.link,
-      message: data.msg,
-      status: data.status,
-    };
-  }
-
-  return {
-    link: lastData.link,
-    message: lastData.msg || "Konversi memakan waktu terlalu lama. Coba lagi nanti.",
-    status: lastData.status,
-  };
+  return str;
 }
 
 function detectFormat(url: string, requestedFormat: string): string {
@@ -132,20 +47,64 @@ function detectFormat(url: string, requestedFormat: string): string {
   return requestedFormat;
 }
 
-function normalizeResult(data: ApiResult, sourceUrl: string, format: string = "mp3"): NormalizedResult {
+function getHost(): string {
+  return process.env.VIDEO_DOWNLOAD_API_HOST || process.env.RAPID_API_HOST || DEFAULT_HOST;
+}
+
+function getApiKey(): string | undefined {
+  return process.env.VIDEO_DOWNLOAD_API_KEY || process.env.RAPID_API_KEY;
+}
+
+async function fetchFromApi(sourceUrl: string, format: string = "mp3") {
+  const apiKey = getApiKey();
+
+  if (!apiKey) {
+    throw { message: "API key belum dikonfigurasi. Atur VIDEO_DOWNLOAD_API_KEY di Vercel Environment Variables.", status: 503 };
+  }
+
+  const host = getHost();
+  const endpoint = format === "mp4" ? "video-info" : "audio-info";
+  const url = `https://${host}/api/${endpoint}?url=${encodeURIComponent(sourceUrl)}`;
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "X-RapidAPI-Key": apiKey,
+      "X-RapidAPI-Host": host,
+    },
+  });
+
+  if (!response.ok) {
+    let msg = "API request failed";
+    try {
+      const err = await response.json();
+      msg = stringValue(err.message) || stringValue(err.msg) || msg;
+    } catch {}
+    throw { message: msg, status: response.status };
+  }
+
+  return response.json();
+}
+
+function normalizeResult(data: any, sourceUrl: string, format: string): NormalizedResult {
   const videoId = extractYoutubeId(sourceUrl);
-  const result = data.result || data;
-  const downloadUrl = stringValue(result.link);
+  const downloadUrl = pick(data, "downloadUrl", "source", "url", "link", "src");
+  const title = pick(data, "title", "name");
+  const thumbnail = pick(data, "thumbnail", "thumb", "thumbnailUrl");
+  const duration = formatDuration(data.duration ?? data.length ?? data.lengthSeconds);
+  const quality = pick(data, "quality", "resolution");
+  const fileSize = pick(data, "fileSizeMB", "size", "fileSize", "contentLength");
+
   const actualFormat = detectFormat(downloadUrl, format);
   const defaultQuality = actualFormat === "mp4" ? "720p" : "320kbps";
-  
+
   return {
     url: downloadUrl,
-    title: stringValue(result.title) || `YouTube Video (${videoId})`,
-    thumbnailUrl: stringValue(result.thumbnail) || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-    duration: formatDuration(result.duration),
-    quality: stringValue(result.quality) || defaultQuality,
-    size: "Unknown",
+    title: title || `YouTube Video (${videoId})`,
+    thumbnailUrl: thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    duration,
+    quality: quality || defaultQuality,
+    size: fileSize ? `${fileSize} MB` : "Unknown",
     format: actualFormat,
   };
 }
@@ -160,23 +119,24 @@ async function handleConvert(sourceUrl: string, format: string = "mp3") {
   }
 
   try {
-    const data = await fetchFromRapidApi(sourceUrl, format);
+    const data = await fetchFromApi(sourceUrl, format);
+    const result = normalizeResult(data, sourceUrl, format);
 
-    const downloadLink = stringValue(data.link);
-
-    if (!downloadLink) {
-      const detail = stringValue(data.message) || "Coba lagi dalam beberapa saat.";
-      return NextResponse.json({ message: detail, status: data.status || "502" }, { status: 502 });
+    if (!result.url) {
+      return NextResponse.json({
+        message: stringValue(data.message) || data.msg || "Gagal mendapatkan link download.",
+        status: "502",
+      }, { status: 502 });
     }
 
-    return NextResponse.json(normalizeResult(data, sourceUrl, format));
+    return NextResponse.json(result);
   } catch (error: any) {
     const isConfigError = error?.status === 503;
     const status = isConfigError ? 503 : (error?.status || 502);
 
     return NextResponse.json({
       message: isConfigError ? error.message : (error?.message || "API gagal memproses permintaan."),
-      detail: isConfigError ? "Atur environment variable yang diperlukan." : (error?.message || "Unknown error")
+      detail: isConfigError ? "Atur environment variable yang diperlukan." : (error?.message || "Unknown error"),
     }, { status });
   }
 }
