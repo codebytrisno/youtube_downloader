@@ -47,85 +47,84 @@ export function DownloadResult() {
     }
   }, [searchParams]);
 
-  const formatLabel = result.format === "mp4" ? "MP4" : "MP3";
-  const qualityIcon = result.format === "mp4" ? "videocam" : "high_quality";
+  const isMp4 = result.format === "mp4";
+  const formatLabel = isMp4 ? "MP4" : "MP3";
+  const qualityIcon = isMp4 ? "videocam" : "high_quality";
   const hasDownloadUrl = result.url.length > 0;
 
   return (
-    <div className="flex w-full max-w-[800px] flex-col gap-lg">
-      <div className="space-y-sm text-center">
-        <div className="mb-sm inline-flex h-16 w-16 items-center justify-center rounded-full bg-surface-container-high text-primary">
-          <MaterialIcon name="check_circle" className="text-[32px]" fill />
+    <div className="flex w-full max-w-[640px] flex-col items-center gap-6">
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-surface-container-high text-primary">
+          <MaterialIcon name="check_circle" className="text-[28px]" fill />
         </div>
-        <h1 className="text-on-surface font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg">
+        <h1 className="font-headline-lg-mobile text-headline-lg-mobile text-on-surface md:font-headline-lg md:text-headline-lg">
           {t.pageTitle}
         </h1>
-        <p className="font-body-lg text-body-lg text-on-surface-variant">{t.description}</p>
+        <p className="mt-1 font-body-md text-body-md text-on-surface-variant">{t.description}</p>
       </div>
 
-      <div className="flex flex-col overflow-hidden rounded-lg border border-outline bg-surface-container-lowest transition-shadow duration-300 hover:shadow-[0_10px_15px_-3px_rgba(0,0,0,0.05)] group md:flex-row">
-        <div className="relative h-[180px] shrink-0 bg-surface-container-highest md:h-auto md:w-[320px]">
-          <Image
-            alt={result.title}
-            className="absolute inset-0 h-full w-full object-cover"
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 320px"
-            src={result.thumbnailUrl}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-        </div>
-        <div className="flex flex-grow flex-col justify-between gap-md p-md">
-          <div className="space-y-xs">
-            <div className="flex items-start gap-2">
-              <h2 className="line-clamp-2 font-headline-sm text-headline-sm text-on-surface">{result.title}</h2>
-              <span className={`mt-0.5 shrink-0 rounded-md px-2 py-0.5 text-[11px] font-bold uppercase leading-relaxed tracking-wider ${
-                formatLabel === "MP4"
-                  ? "bg-tertiary-container/20 text-tertiary"
-                  : "bg-primary-container/20 text-primary"
-              }`}>
-                {formatLabel}
+      <div className="w-full overflow-hidden rounded-xl border border-outline-variant/60 bg-white shadow-xs">
+        <div className="flex flex-col md:flex-row">
+          <div className="relative h-44 shrink-0 bg-surface-container-highest md:h-auto md:w-56">
+            <Image
+              alt={result.title}
+              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 224px"
+              src={result.thumbnailUrl}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent" />
+            <span className={`absolute bottom-2 left-2 rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider ${
+              isMp4
+                ? "bg-tertiary/90 text-white"
+                : "bg-primary/90 text-white"
+            }`}>
+              {formatLabel}
+            </span>
+          </div>
+          <div className="flex flex-1 flex-col gap-4 p-4">
+            <h2 className="line-clamp-2 font-headline-sm text-headline-sm text-on-surface leading-snug">
+              {result.title}
+            </h2>
+            <div className="flex flex-wrap items-center gap-3 text-label-sm text-secondary">
+              <span className="flex items-center gap-1">
+                <MaterialIcon name="schedule" className="text-[15px]" />
+                {t.duration}: {result.duration}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-outline-variant" />
+              <span className="flex items-center gap-1">
+                <MaterialIcon name={qualityIcon} className="text-[15px]" />
+                {t.quality}: {result.quality}
+              </span>
+              <span className="h-1 w-1 rounded-full bg-outline-variant" />
+              <span className="flex items-center gap-1">
+                <MaterialIcon name="folder_zip" className="text-[15px]" />
+                {t.size}: {result.size}
               </span>
             </div>
-            <div className="mt-xs flex flex-wrap items-center gap-sm">
-              <div className="flex items-center gap-base font-label-sm text-label-sm text-secondary">
-                <MaterialIcon name="schedule" className="text-[16px]" />
-                {t.duration}: {result.duration}
-              </div>
-              <span className="h-1 w-1 rounded-full bg-outline-variant" />
-              <div className="flex items-center gap-base font-label-sm text-label-sm text-secondary">
-                <MaterialIcon name={qualityIcon} className="text-[16px]" />
-                {t.quality}: {result.quality}
-              </div>
-              <span className="h-1 w-1 rounded-full bg-outline-variant" />
-              <div className="flex items-center gap-base font-label-sm text-label-sm text-secondary">
-                <MaterialIcon name="folder_zip" className="text-[16px]" />
-                {t.size}: {result.size}
-              </div>
-            </div>
+            <a
+              className={`flex h-11 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary-container font-button text-button text-on-primary shadow-xs transition-all duration-200 hover:shadow-sm hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                !hasDownloadUrl ? "pointer-events-none opacity-50" : ""
+              }`}
+              href={result.url || "#"}
+              aria-disabled={!hasDownloadUrl}
+            >
+              <MaterialIcon name="download" className="text-[18px]" fill />
+              {t.download} {formatLabel}
+            </a>
           </div>
-          <a
-            className={`flex h-14 items-center justify-center gap-xs rounded bg-primary font-button text-button text-on-primary transition-colors hover:bg-primary-container focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-              !hasDownloadUrl ? "pointer-events-none opacity-50" : ""
-            }`}
-            href={result.url || "#"}
-            aria-disabled={!hasDownloadUrl}
-          >
-            <MaterialIcon name="download" className="text-[20px]" fill />
-            {t.download} {formatLabel}
-          </a>
         </div>
       </div>
 
-      <div className="flex justify-center mt-sm">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-xs rounded border border-outline px-md py-sm font-button text-button text-on-surface transition-colors hover:bg-surface-container"
-        >
-          <MaterialIcon name="refresh" />
-          {t.convertAnother}
-        </Link>
-      </div>
+      <Link
+        href="/"
+        className="inline-flex items-center gap-2 rounded-lg border border-outline-variant px-4 py-2.5 font-button text-button text-on-surface transition-colors hover:bg-surface-container"
+      >
+        <MaterialIcon name="refresh" className="text-[18px]" />
+        {t.convertAnother}
+      </Link>
     </div>
   );
 }

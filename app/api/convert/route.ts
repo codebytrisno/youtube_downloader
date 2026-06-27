@@ -66,8 +66,11 @@ async function fetchFromRapidApi(sourceUrl: string, format: string = "mp3"): Pro
 
   const host = getHost();
   const videoId = extractYoutubeId(sourceUrl);
-  const path = format === "mp4" ? "/mp4" : "/dl";
-  const endpoint = `https://${host}${path}?id=${encodeURIComponent(videoId)}`;
+  const params = new URLSearchParams({ id: videoId });
+  if (format === "mp4") {
+    params.set("format", "mp4");
+  }
+  const endpoint = `https://${host}/dl?${params.toString()}`;
 
   const maxRetries = 20;
   let attempts = 0;
