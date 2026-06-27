@@ -14,6 +14,7 @@ type ApiResult = {
     title?: string;
     thumbnail?: string;
     duration?: string;
+    quality?: string;
   };
 };
 
@@ -24,6 +25,7 @@ type NormalizedResult = {
   duration: string;
   quality: string;
   size: string;
+  format: string;
 };
 
 const DEFAULT_HOST = "youtube-mp36.p.rapidapi.com";
@@ -52,7 +54,7 @@ async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function fetchFromRapidApi(sourceUrl: string): Promise<ApiResult> {
+async function fetchFromRapidApi(sourceUrl: string, format: string = "mp3"): Promise<ApiResult> {
   const apiKey = getApiKey();
 
   if (!apiKey) {
@@ -64,7 +66,7 @@ async function fetchFromRapidApi(sourceUrl: string): Promise<ApiResult> {
 
   const host = getHost();
   const videoId = extractYoutubeId(sourceUrl);
-  const endpoint = `https://${host}/dl?id=${encodeURIComponent(videoId)}`;
+  const endpoint = `https://${host}/dl?id=${encodeURIComponent(videoId)}&format=${encodeURIComponent(format)}`;
 
   const maxRetries = 20;
   let attempts = 0;
@@ -118,21 +120,23 @@ async function fetchFromRapidApi(sourceUrl: string): Promise<ApiResult> {
   };
 }
 
-function normalizeResult(data: ApiResult, sourceUrl: string): NormalizedResult {
+function normalizeResult(data: ApiResult, sourceUrl: string, format: string = "mp3"): NormalizedResult {
   const videoId = extractYoutubeId(sourceUrl);
   const result = data.result || data;
+  const defaultQuality = format === "mp4" ? "720p" : "320kbps";
   
   return {
     url: stringValue(result.link),
     title: stringValue(result.title) || `YouTube Video (${videoId})`,
     thumbnailUrl: stringValue(result.thumbnail) || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
     duration: formatDuration(result.duration),
-    quality: "320kbps",
+    quality: stringValue(result.quality) || defaultQuality,
     size: "Unknown",
+    format,
   };
 }
 
-async function handleConvert(sourceUrl: string) {
+async function handleConvert(sourceUrl: string, format: string = "mp3") {
   if (!sourceUrl) {
     return NextResponse.json({ message: "URL YouTube wajib diisi." }, { status: 400 });
   }
@@ -142,7 +146,7 @@ async function handleConvert(sourceUrl: string) {
   }
 
   try {
-    const data = await fetchFromRapidApi(sourceUrl);
+    const data = await fetchFromRapidApi(sourceUrl, format);
 
     const downloadLink = stringValue(data.link);
 
@@ -151,7 +155,7 @@ async function handleConvert(sourceUrl: string) {
       return NextResponse.json({ message: detail, status: data.status || "502" }, { status: 502 });
     }
 
-    return NextResponse.json(normalizeResult(data, sourceUrl));
+    return NextResponse.json(normalizeResult(data, sourceUrl, format));
   } catch (error: any) {
     const isConfigError = error?.status === 503;
     const status = isConfigError ? 503 : (error?.status || 502);
@@ -166,7 +170,8 @@ async function handleConvert(sourceUrl: string) {
 export async function GET(request: NextRequest) {
   try {
     const sourceUrl = request.nextUrl.searchParams.get("url") || "";
-    return await handleConvert(sourceUrl);
+    const format = request.nextUrl.searchParams.get("format") || "mp3";
+    return await handleConvert(sourceUrl, format);
   } catch {
     return NextResponse.json({ message: "API gagal memproses permintaan." }, { status: 502 });
   }
@@ -176,7 +181,8 @@ export async function POST(request: NextRequest) {
   try {
     const payload = await request.json().catch(() => null);
     const sourceUrl = typeof payload?.url === "string" ? payload.url.trim() : "";
-    return await handleConvert(sourceUrl);
+    const format = typeof payload?.format === "string" ? payload.format.trim() : "mp3";
+    return await handleConvert(sourceUrl, format);
   } catch {
     return NextResponse.json({ message: "API gagal memproses permintaan." }, { status: 502 });
   }

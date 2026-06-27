@@ -15,6 +15,7 @@ type ConvertResponse = {
   duration?: string;
   quality?: string;
   size?: string;
+  format?: string;
 };
 
 type ConverterFormProps = {
@@ -24,6 +25,7 @@ type ConverterFormProps = {
 export function ConverterForm({ className = "" }: ConverterFormProps) {
   const router = useRouter();
   const [url, setUrl] = useState("");
+  const [format, setFormat] = useState("mp3");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [progress, setProgress] = useState(0);
@@ -53,7 +55,7 @@ export function ConverterForm({ className = "" }: ConverterFormProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url: trimmedUrl }),
+        body: JSON.stringify({ url: trimmedUrl, format }),
       });
 
       const data: ConvertResponse = await response.json();
@@ -66,6 +68,7 @@ export function ConverterForm({ className = "" }: ConverterFormProps) {
         "yt-mp3-result",
         JSON.stringify({
           ...data,
+          format,
           sourceUrl: trimmedUrl,
         }),
       );
@@ -101,10 +104,35 @@ export function ConverterForm({ className = "" }: ConverterFormProps) {
               type="url"
             />
           </div>
-          <div className="mt-3 flex items-center gap-3 md:mt-0 md:pl-3">
-            <div className="hidden h-8 w-px bg-outline-variant/70 md:block" />
+          <div className="mt-3 flex items-center gap-2 md:mt-0 md:pl-3">
+            <div className="flex rounded-xl border border-outline-variant/60 bg-surface-container-low p-0.5">
+              <button
+                type="button"
+                onClick={() => setFormat("mp3")}
+                className={`flex items-center gap-1.5 rounded-[10px] px-3 py-2 text-xs font-bold transition-all ${
+                  format === "mp3"
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                <MaterialIcon name="music_note" className="text-[16px]" fill={format === "mp3"} />
+                {t.mp3}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormat("mp4")}
+                className={`flex items-center gap-1.5 rounded-[10px] px-3 py-2 text-xs font-bold transition-all ${
+                  format === "mp4"
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "text-on-surface-variant hover:text-on-surface"
+                }`}
+              >
+                <MaterialIcon name="videocam" className="text-[16px]" fill={format === "mp4"} />
+                {t.mp4}
+              </button>
+            </div>
             <button
-              className="flex h-14 w-full items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-gradient-to-r from-primary to-primary-container px-6 font-button text-button text-on-primary shadow-sm transition-all duration-200 hover:shadow-md hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 md:w-auto"
+              className="flex h-14 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-gradient-to-r from-primary to-primary-container px-6 font-button text-button text-on-primary shadow-sm transition-all duration-200 hover:shadow-md hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 md:flex-initial"
               type="submit"
               disabled={loading}
             >

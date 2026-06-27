@@ -70,7 +70,7 @@ export const translations = {
         },
       ],
       howItWorks: "How it works",
-      stepsTitle: "Three simple steps to your MP3",
+      stepsTitle: "Three simple steps to your file",
       stepsDescription:
         "Paste, process, download. The whole workflow is built to feel fast, focused, and modern.",
       steps: [
@@ -78,12 +78,12 @@ export const translations = {
         {
           icon: "auto_awesome",
           title: "Processing",
-          description: "Our converter extracts and prepares the audio version of your video.",
+          description: "Our converter extracts and prepares your file for download.",
         },
         {
           icon: "download",
-          title: "Download MP3",
-          description: "Save the converted audio file directly to your device.",
+          title: "Download",
+          description: "Save the converted file directly to your device.",
         },
       ],
       faqTitle: "Frequently Asked Questions",
@@ -95,6 +95,10 @@ export const translations = {
       invalidUrl: "Enter a valid YouTube URL.",
       conversionFailed: "Conversion failed.",
       terms: "By using our service you accept our Terms of Service.",
+      mp3: "MP3",
+      mp4: "MP4",
+      audio: "Audio",
+      video: "Video",
     },
     faq: {
       title: "Frequently Asked Questions",
@@ -124,11 +128,11 @@ export const translations = {
     },
     download: {
       pageTitle: "Conversion Complete",
-      description: "Your MP3 file is ready. Click below to save it to your device.",
+      description: "Your file is ready. Click below to save it to your device.",
       duration: "Duration",
       quality: "Quality",
       size: "Size",
-      download: "Download MP3",
+      download: "Download",
       convertAnother: "Convert Another",
       loading: "Loading conversion result",
     },
@@ -244,7 +248,7 @@ stats: [
         },
       ],
       howItWorks: "Cara kerja",
-      stepsTitle: "Tiga langkah mudah untuk MP3 Anda",
+      stepsTitle: "Tiga langkah mudah untuk file Anda",
       stepsDescription:
         "Tempel, proses, unduh. Seluruh alur dibuat agar terasa cepat, fokus, dan modern.",
       steps: [
@@ -252,12 +256,12 @@ stats: [
         {
           icon: "auto_awesome",
           title: "Memproses",
-          description: "Konverter mengekstrak dan menyiapkan versi audio dari video Anda.",
+          description: "Konverter mengekstrak dan menyiapkan file Anda untuk diunduh.",
         },
         {
           icon: "download",
-          title: "Unduh MP3",
-          description: "Simpan file audio yang sudah dikonversi langsung ke perangkat Anda.",
+          title: "Unduh",
+          description: "Simpan file yang sudah dikonversi langsung ke perangkat Anda.",
         },
       ],
       faqTitle: "Pertanyaan yang Sering Diajukan",
@@ -269,6 +273,10 @@ stats: [
       invalidUrl: "Masukkan URL YouTube yang valid.",
       conversionFailed: "Konversi gagal.",
       terms: "Dengan menggunakan layanan kami, Anda menyetujui Ketentuan Layanan kami.",
+      mp3: "MP3",
+      mp4: "MP4",
+      audio: "Audio",
+      video: "Video",
     },
     faq: {
       title: "Pertanyaan yang Sering Diajukan",
@@ -298,11 +306,11 @@ stats: [
     },
     download: {
       pageTitle: "Konversi Selesai",
-      description: "File MP3 Anda sudah siap. Klik di bawah untuk menyimpannya ke perangkat.",
+      description: "File Anda sudah siap. Klik di bawah untuk menyimpannya ke perangkat.",
       duration: "Durasi",
       quality: "Kualitas",
       size: "Ukuran",
-      download: "Unduh MP3",
+      download: "Unduh",
       convertAnother: "Konversi Lainnya",
       loading: "Memuat hasil konversi",
     },

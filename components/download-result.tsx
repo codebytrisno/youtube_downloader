@@ -15,6 +15,7 @@ type DownloadResultState = {
   duration: string;
   quality: string;
   size: string;
+  format: string;
 };
 
 const fallbackResult: DownloadResultState = {
@@ -24,6 +25,7 @@ const fallbackResult: DownloadResultState = {
   duration: "4:32",
   quality: "320kbps",
   size: "10.4 MB",
+  format: "mp3",
 };
 
 export function DownloadResult() {
@@ -45,6 +47,8 @@ export function DownloadResult() {
     }
   }, [searchParams]);
 
+  const formatLabel = result.format === "mp4" ? "MP4" : "MP3";
+  const qualityIcon = result.format === "mp4" ? "videocam" : "high_quality";
   const hasDownloadUrl = result.url.length > 0;
 
   return (
@@ -73,7 +77,16 @@ export function DownloadResult() {
         </div>
         <div className="flex flex-grow flex-col justify-between gap-md p-md">
           <div className="space-y-xs">
-            <h2 className="line-clamp-2 font-headline-sm text-headline-sm text-on-surface">{result.title}</h2>
+            <div className="flex items-start gap-2">
+              <h2 className="line-clamp-2 font-headline-sm text-headline-sm text-on-surface">{result.title}</h2>
+              <span className={`mt-0.5 shrink-0 rounded-md px-2 py-0.5 text-[11px] font-bold uppercase leading-relaxed tracking-wider ${
+                formatLabel === "MP4"
+                  ? "bg-tertiary-container/20 text-tertiary"
+                  : "bg-primary-container/20 text-primary"
+              }`}>
+                {formatLabel}
+              </span>
+            </div>
             <div className="mt-xs flex flex-wrap items-center gap-sm">
               <div className="flex items-center gap-base font-label-sm text-label-sm text-secondary">
                 <MaterialIcon name="schedule" className="text-[16px]" />
@@ -81,7 +94,7 @@ export function DownloadResult() {
               </div>
               <span className="h-1 w-1 rounded-full bg-outline-variant" />
               <div className="flex items-center gap-base font-label-sm text-label-sm text-secondary">
-                <MaterialIcon name="high_quality" className="text-[16px]" />
+                <MaterialIcon name={qualityIcon} className="text-[16px]" />
                 {t.quality}: {result.quality}
               </div>
               <span className="h-1 w-1 rounded-full bg-outline-variant" />
@@ -99,7 +112,7 @@ export function DownloadResult() {
             aria-disabled={!hasDownloadUrl}
           >
             <MaterialIcon name="download" className="text-[20px]" fill />
-            {t.download}
+            {t.download} {formatLabel}
           </a>
         </div>
       </div>
