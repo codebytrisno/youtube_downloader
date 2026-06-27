@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#080c14"/>
+      <stop offset="100%" stop-color="#020408"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00d4ff"/>
+      <stop offset="50%" stop-color="#7b2dff"/>
+      <stop offset="100%" stop-color="#ff2d7b"/>
+    </linearGradient>
+    <filter id="neon">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#00d4ff" flood-opacity="0.7"/>
+    </filter>
+  </defs>
+  <rect x="10" y="10" width="160" height="160" rx="36" fill="url(#bg)" stroke="url(#glow)" stroke-width="5"/>
+  <polygon points="55,35 55,145 140,90" fill="#00d4ff" filter="url(#neon)"/>
+</svg>
