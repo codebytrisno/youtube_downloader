@@ -1,21 +1,13 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
-import { DownloadResult } from "@/components/download-result";
 
 export const metadata: Metadata = {
-  title: "YT-MP3 - Conversion Complete",
+  title: "Download",
 };
 
 export default function DownloadPage() {
   return (
-    <main className="flex flex-grow flex-col items-center justify-center px-gutter py-xl">
-      <Suspense
-        fallback={
-          <div className="h-16 w-16 animate-pulse rounded-full bg-surface-container-high" aria-label="Loading conversion result" />
-        }
-      >
-        <DownloadResult />
-      </Suspense>
-    </main>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-950 dark:to-zinc-900">
+      <p className="text-zinc-600 dark:text-zinc-400">Download page</p>
+    </div>
   );
 }

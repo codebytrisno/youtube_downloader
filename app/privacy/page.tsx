@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PrivacyContent } from "./privacy-content";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy - YT-MP3",
+  title: "Kebijakan Privasi",
 };
 
 export default function PrivacyPage() {
