@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "YTMP3MP4Downloader",
+  title: "YouTube Downloader",
   description: "Download YouTube video atau audio dengan mudah dan cepat.",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
